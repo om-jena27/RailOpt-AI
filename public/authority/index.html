@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RailOpt AI - Authority Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#070d1e] text-slate-100 font-sans antialiased overflow-x-hidden min-h-screen">
+  
+  <div class="flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-[#0d162d] border-r border-slate-800 flex flex-col justify-between shrink-0">
+      <div>
+        <!-- App Branding -->
+        <div class="p-4 flex items-center space-x-3 border-b border-slate-800/60">
+          <div class="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 font-bold text-xl shadow-lg shadow-blue-900/20">
+            <i class="fa-solid fa-train-subway"></i>
+          </div>
+          <div>
+            <h1 class="font-bold text-base text-slate-100 uppercase tracking-wider leading-tight">RailOpt AI</h1>
+            <p class="text-[10px] font-semibold text-blue-400 tracking-wide uppercase">Block Intelligence System</p>
+          </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="p-3 space-y-1 text-sm font-medium">
+          <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg bg-blue-600 text-white shadow-md shadow-blue-600/30">
+            <i class="fa-solid fa-house w-5 text-center"></i>
+            <span>Overview</span>
+          </a>
+          <a href="#" onclick="openModal('createBlockModal')" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/50 transition">
+            <i class="fa-solid fa-calendar-days w-5 text-center"></i>
+            <span>Block Planning</span>
+          </a>
+          <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/50 transition">
+            <i class="fa-solid fa-clock w-5 text-center"></i>
+            <span>Live Operations</span>
+          </a>
+          <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/50 transition">
+            <i class="fa-solid fa-train w-5 text-center"></i>
+            <span>Trains</span>
+          </a>
+          <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/50 transition">
+            <i class="fa-solid fa-wrench w-5 text-center"></i>
+            <span>Maintenance</span>
+          </a>
+          <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/50 transition">
+            <i class="fa-solid fa-chart-line w-5 text-center"></i>
+            <span>Impact Analysis</span>
+          </a>
+          <a href="#" onclick="openModal('simulationModal')" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/50 transition">
+            <i class="fa-solid fa-flask w-5 text-center"></i>
+            <span>What-if Simulation</span>
+          </a>
+          <a href="#" class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/50 transition">
+            <div class="flex items-center space-x-3">
+              <i class="fa-solid fa-bell w-5 text-center"></i>
+              <span>Alerts & Notifications</span>
+            </div>
+            <span class="bg-red-500/20 text-red-400 border border-red-500/30 text-xs px-2 py-0.5 rounded-full font-bold">12</span>
+          </a>
+        </nav>
+      </div>
+
+      <!-- Quick Actions Card -->
+      <div class="p-3 border-t border-slate-800/60">
+        <div class="bg-[#131d38] p-3 rounded-xl border border-slate-700/50 space-y-2">
+          <div class="text-xs font-semibold text-slate-400 flex items-center space-x-2">
+            <i class="fa-solid fa-bolt text-yellow-400"></i>
+            <span>Quick Actions</span>
+          </div>
+          <!-- 1. Create Block -->
+          <button onclick="openModal('createBlockModal')" class="w-full py-2 px-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium text-xs flex items-center justify-center space-x-2 transition shadow-md shadow-blue-600/30">
+            <i class="fa-solid fa-plus-circle"></i>
+            <span>+ Create Block</span>
+          </button>
+          <!-- 2. Reschedule Block -->
+          <button onclick="openModal('rescheduleBlockModal')" class="w-full py-2 px-3 bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 border border-amber-500/40 rounded-lg font-medium text-xs flex items-center justify-center space-x-2 transition">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span>⚡ Reschedule Block</span>
+          </button>
+          <!-- 3. What-if Simulation -->
+          <button onclick="openModal('simulationModal')" class="w-full py-2 px-3 bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-500/40 rounded-lg font-medium text-xs flex items-center justify-center space-x-2 transition">
+            <i class="fa-solid fa-flask"></i>
+            <span>🧪 What-if Simulation</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col min-w-0 bg-[#070d1e] overflow-y-auto">
+
+      <!-- TOP HEADER BAR -->
+      <header class="h-16 border-b border-slate-800 bg-[#0d162d]/80 backdrop-blur px-6 flex items-center justify-between shrink-0 sticky top-0 z-20">
+        <div>
+          <h2 class="text-lg font-bold text-slate-100 flex items-center space-x-3">
+            <span>RAILOPT AI — AUTHORITY DASHBOARD</span>
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">Live Feed</span>
+          </h2>
+          <p class="text-xs text-slate-400">Real-time Overview of Network Operations (Kharagpur SER Division)</p>
+        </div>
+
+        <div class="flex items-center space-x-5 text-sm">
+          <!-- Live Date & Clock -->
+          <div class="flex items-center space-x-2 text-slate-300 bg-[#131d38] px-3 py-1.5 rounded-lg border border-slate-700/60 font-mono text-xs">
+            <i class="fa-regular fa-calendar text-blue-400"></i>
+            <span id="liveDate">15 May 2025</span>
+            <span class="text-slate-500">|</span>
+            <span id="liveTime">14:35:22</span>
+          </div>
+
+          <!-- Notification Icon -->
+          <button class="relative p-2 text-slate-300 hover:text-white bg-[#131d38] rounded-lg border border-slate-700/60 transition">
+            <i class="fa-regular fa-bell"></i>
+            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">12</span>
+          </button>
+
+          <!-- User Controller Badge -->
+          <div class="flex items-center space-x-3 pl-3 border-l border-slate-800">
+            <div class="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shadow-inner">
+              DC
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-slate-200">Divisional Controller</p>
+              <p class="text-[10px] text-slate-400">Kharagpur Division</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- DASHBOARD BODY CONTAINER -->
+      <div class="p-6 space-y-6">
+
+        <!-- 1. TOP 5 KPI METRICS CARDS -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+          
+          <!-- Card 1: Active Blocks -->
+          <div class="bg-[#0f1936] p-4 rounded-xl border border-slate-800 relative overflow-hidden group hover:border-slate-700 transition shadow-lg">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">ACTIVE BLOCKS</p>
+                <h3 class="text-3xl font-extrabold text-white mt-1" id="kpiActiveBlocks">24</h3>
+                <p class="text-xs text-emerald-400 font-medium mt-1 flex items-center space-x-1">
+                  <i class="fa-solid fa-arrow-up"></i>
+                  <span>9 from yesterday</span>
+                </p>
+              </div>
+              <div class="p-2.5 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                <i class="fa-regular fa-calendar-check text-xl"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Trains On Run -->
+          <div class="bg-[#0f1936] p-4 rounded-xl border border-slate-800 relative overflow-hidden group hover:border-slate-700 transition shadow-lg">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">TRAINS ON RUN</p>
+                <h3 class="text-3xl font-extrabold text-white mt-1" id="kpiTrainsOnRun">186</h3>
+                <p class="text-xs text-emerald-400 font-medium mt-1">On Network</p>
+              </div>
+              <div class="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <i class="fa-solid fa-train-subway text-xl"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Affected Trains -->
+          <div class="bg-[#0f1936] p-4 rounded-xl border border-slate-800 relative overflow-hidden group hover:border-slate-700 transition shadow-lg">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">AFFECTED TRAINS</p>
+                <h3 class="text-3xl font-extrabold text-amber-400 mt-1" id="kpiAffectedTrains">37</h3>
+                <p class="text-xs text-amber-400/90 font-medium mt-1" id="kpiAffectedTag">High Impact</p>
+              </div>
+              <div class="p-2.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4: Total Delay -->
+          <div class="bg-[#0f1936] p-4 rounded-xl border border-slate-800 relative overflow-hidden group hover:border-slate-700 transition shadow-lg">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">TOTAL DELAY (mins)</p>
+                <h3 class="text-3xl font-extrabold text-red-400 mt-1" id="kpiTotalDelay">2,346</h3>
+                <p class="text-xs text-red-400/90 font-medium mt-1">Network Impact</p>
+              </div>
+              <div class="p-2.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20">
+                <i class="fa-regular fa-clock text-xl"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 5: Asset Availability -->
+          <div class="bg-[#0f1936] p-4 rounded-xl border border-slate-800 relative overflow-hidden group hover:border-slate-700 transition shadow-lg">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">ASSET AVAILABILITY</p>
+                <h3 class="text-3xl font-extrabold text-purple-400 mt-1" id="kpiAssetAvailability">78%</h3>
+                <p class="text-xs text-purple-400/90 font-medium mt-1" id="kpiAssetTag">↑ 12% vs Current Plan</p>
+              </div>
+              <div class="p-2.5 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                <i class="fa-solid fa-chart-pie text-xl"></i>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 2. MIDDLE ROW: NETWORK MAP WITH REROUTING VISUALIZER + UPCOMING BLOCKS -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+          <!-- NETWORK MAP PANEL WITH DYNAMIC REROUTING VISUALIZER (7 Cols) -->
+          <div class="lg:col-span-7 bg-[#0f1936] p-5 rounded-xl border border-slate-800 relative flex flex-col justify-between shadow-xl min-h-[420px]">
+            
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center space-x-3">
+                <h3 class="text-sm font-bold text-slate-100 uppercase tracking-wider">NETWORK MAP — LIVE STATUS</h3>
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+              </div>
+
+              <!-- Dynamic Reroute Visualizer Toggle Button -->
+              <button onclick="toggleRerouting()" id="rerouteToggleBtn" class="py-1.5 px-3 bg-[#17274e] hover:bg-[#1e3467] text-emerald-400 border border-emerald-500/40 rounded-lg text-xs font-bold transition flex items-center space-x-2 shadow-md">
+                <i class="fa-solid fa-route"></i>
+                <span id="rerouteBtnText">🔀 Simulate Dynamic AI Rerouting (via TATA Bypass)</span>
+              </button>
+            </div>
+
+            <!-- Legend Bar -->
+            <div class="flex items-center space-x-4 text-[11px] text-slate-400 mb-1 bg-[#091124] px-3 py-1.5 rounded-lg border border-slate-800/60">
+              <span class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-red-500"></span><span>Active Block</span></span>
+              <span class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span><span>Normal Track</span></span>
+              <span class="flex items-center space-x-1.5" id="rerouteLegend"><span class="w-3 h-1 bg-cyan-400 rounded"></span><span class="text-cyan-300 font-bold">AI Reroute Path (TATA Bypass)</span></span>
+            </div>
+
+            <!-- SVG Railway Network Graph with Dynamic Rerouting Line -->
+            <div class="relative w-full h-72 my-2 bg-[#091124] rounded-lg border border-slate-800/80 p-2 overflow-hidden flex items-center justify-center">
+              <svg viewBox="0 0 700 300" class="w-full h-full">
+                <defs>
+                  <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="3" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                  </filter>
+                  <filter id="cyanGlow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="4" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                  </filter>
+                </defs>
+
+                <!-- Normal Track Edges -->
+                <path d="M 80,110 L 160,80 L 260,80 L 370,50 L 480,90 L 590,140 L 460,260 L 330,240 L 200,210 L 80,110" fill="none" stroke="#1e294b" stroke-width="6" />
+                <path d="M 160,80 L 230,140 L 330,240" fill="none" stroke="#1e294b" stroke-width="4" />
+                <path d="M 260,80 L 370,160 L 460,260" fill="none" stroke="#1e294b" stroke-width="4" opacity="0.6" />
+
+                <!-- Active Green Track Connections -->
+                <path d="M 80,110 L 160,80" fill="none" stroke="#10b981" stroke-width="3" />
+                <path d="M 260,80 L 370,50 L 480,90 L 590,140 L 460,260" fill="none" stroke="#10b981" stroke-width="3" />
+                <path d="M 460,260 L 330,240 L 200,210 L 80,110" fill="none" stroke="#10b981" stroke-width="3" />
+
+                <!-- DYNAMIC ALTERNATIVE REROUTE LINE (Kharagpur 460,260 -> Tatanagar 200,210 -> Ranchi 80,110) -->
+                <path id="svgReroutePath" d="M 460,260 L 200,210 L 80,110" fill="none" stroke="#06b6d4" stroke-width="5" stroke-dasharray="8,4" class="hidden animate-pulse" filter="url(#cyanGlow)" />
+
+                <!-- ACTIVE RED BLOCK: Muri (160,80) to Bokaro (260,80) -->
+                <line x1="160" y1="80" x2="260" y2="80" stroke="#ef4444" stroke-width="6" stroke-dasharray="8,4" class="animate-pulse" filter="url(#glow)" />
+
+                <!-- Station Nodes -->
+                <!-- Ranchi -->
+                <circle cx="80" cy="110" r="6" fill="#0f1936" stroke="#94a3b8" stroke-width="2" />
+                <text x="75" y="98" fill="#cbd5e1" font-size="11" font-weight="bold">RNC (Ranchi)</text>
+
+                <!-- Muri -->
+                <circle cx="160" cy="80" r="7" fill="#ef4444" stroke="#ffffff" stroke-width="2" class="animate-pulse" />
+                <text x="155" y="65" fill="#f87171" font-size="12" font-weight="bold">MURI</text>
+
+                <!-- Bokaro -->
+                <circle cx="260" cy="80" r="7" fill="#ef4444" stroke="#ffffff" stroke-width="2" />
+                <text x="255" y="65" fill="#f87171" font-size="12" font-weight="bold">BKSC (Bokaro)</text>
+
+                <!-- Dhanbad -->
+                <circle cx="370" cy="50" r="6" fill="#0f1936" stroke="#94a3b8" stroke-width="2" />
+                <text x="360" y="38" fill="#cbd5e1" font-size="11" font-weight="bold">DHN</text>
+
+                <!-- Asansol -->
+                <circle cx="480" cy="90" r="6" fill="#0f1936" stroke="#94a3b8" stroke-width="2" />
+                <text x="475" y="78" fill="#cbd5e1" font-size="11" font-weight="bold">ASN</text>
+
+                <!-- Durgapur -->
+                <circle cx="560" cy="70" r="6" fill="#0f1936" stroke="#3b82f6" stroke-width="2" />
+                <text x="555" y="58" fill="#cbd5e1" font-size="11" font-weight="bold">DGR</text>
+
+                <!-- Barddhaman -->
+                <circle cx="630" cy="120" r="6" fill="#0f1936" stroke="#94a3b8" stroke-width="2" />
+                <text x="620" y="110" fill="#cbd5e1" font-size="11" font-weight="bold">BWN</text>
+
+                <!-- Howrah -->
+                <circle cx="590" cy="190" r="8" fill="#0f1936" stroke="#3b82f6" stroke-width="3" />
+                <text x="595" y="205" fill="#60a5fa" font-size="12" font-weight="bold">HWH (Howrah)</text>
+
+                <!-- Kharagpur -->
+                <circle cx="460" cy="260" r="8" fill="#0f1936" stroke="#3b82f6" stroke-width="3" />
+                <text x="450" y="280" fill="#60a5fa" font-size="12" font-weight="bold">KGP (Kharagpur)</text>
+
+                <!-- Midnapore -->
+                <circle cx="330" cy="240" r="6" fill="#0f1936" stroke="#94a3b8" stroke-width="2" />
+                <text x="320" y="258" fill="#cbd5e1" font-size="11" font-weight="bold">MDN</text>
+
+                <!-- Tatanagar -->
+                <circle cx="200" cy="210" r="7" fill="#06b6d4" stroke="#ffffff" stroke-width="2" />
+                <text x="180" y="228" fill="#22d3ee" font-size="12" font-weight="bold">TATA (Tatanagar)</text>
+
+                <!-- DYNAMIC TRAIN ROUTE HIGHLIGHT LINE -->
+                <path id="svgSelectedTrainRoute" d="" fill="none" stroke="#fbbf24" stroke-width="4" stroke-dasharray="6,3" class="hidden animate-pulse" filter="url(#glow)" />
+
+                <!-- Dynamic Trains Group (Rendered by app.js) -->
+                <g id="svgDynamicTrainsGroup"></g>
+
+                <!-- Tooltip Overlay -->
+                <g transform="translate(180, 95)">
+                  <rect width="180" height="75" rx="8" fill="#0f172a" stroke="#ef4444" stroke-width="1.5" opacity="0.95" />
+                  <text x="12" y="20" fill="#f87171" font-size="10" font-weight="bold">BLOCK B-127 (ACTIVE)</text>
+                  <text x="12" y="35" fill="#e2e8f0" font-size="10">Track Renewal Work (BCM 342)</text>
+                  <text x="12" y="48" fill="#94a3b8" font-size="9">14:20 - 15:10</text>
+                  <text x="12" y="61" fill="#94a3b8" font-size="9">Section: MURI - BKSC</text>
+                </g>
+
+                <!-- Dynamic Reroute Tooltip Card -->
+                <g id="svgRerouteCard" transform="translate(300, 200)" class="hidden">
+                  <rect width="210" height="65" rx="8" fill="#091428" stroke="#06b6d4" stroke-width="2" opacity="0.95" />
+                  <text x="12" y="20" fill="#22d3ee" font-size="10" font-weight="bold">🔀 AI REROUTE ACTIVE</text>
+                  <text x="12" y="35" fill="#e2e8f0" font-size="10">Train 20898 Vande Bharat Exp</text>
+                  <text x="12" y="48" fill="#34d399" font-size="9">Via TATA/KGP Bypass (Saves 45m)</text>
+                </g>
+              </svg>
+            </div>
+
+            <!-- Map Controls -->
+            <div class="flex justify-between items-center text-xs text-slate-400 mt-2">
+              <span class="flex items-center space-x-2"><i class="fa-solid fa-map-pin text-red-500"></i><span>Section: MURI - BKSC (Track Renewal Work)</span></span>
+              <div class="flex space-x-1">
+                <button class="w-6 h-6 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 flex items-center justify-center font-bold">+</button>
+                <button class="w-6 h-6 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 flex items-center justify-center font-bold">-</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- UPCOMING & ACTIVE BLOCKS (5 Cols) -->
+          <div class="lg:col-span-5 bg-[#0f1936] p-5 rounded-xl border border-slate-800 flex flex-col justify-between shadow-xl">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-slate-100 uppercase tracking-wider">UPCOMING & ACTIVE BLOCKS</h3>
+              <a href="#" class="text-xs text-blue-400 hover:underline">View All</a>
+            </div>
+
+            <!-- Blocks List -->
+            <div class="space-y-3 flex-1 overflow-y-auto pr-1" id="blocksContainer">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 3. THIRD ROW: IMPACT SUMMARY & DELAY DISTRIBUTION -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+          <!-- DONUT IMPACT SUMMARY (5 Cols) -->
+          <div class="lg:col-span-5 bg-[#0f1936] p-5 rounded-xl border border-slate-800 shadow-xl flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-slate-100 uppercase tracking-wider">IMPACT SUMMARY</h3>
+              <span class="text-xs text-slate-400">Total 37 Trains</span>
+            </div>
+
+            <div class="flex items-center justify-around py-4">
+              <div class="relative w-36 h-36 flex items-center justify-center">
+                <svg viewBox="0 0 36 36" class="w-full h-full transform -rotate-90">
+                  <path stroke="#1e294b" stroke-width="4.5" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  <path stroke="#ef4444" stroke-width="4.5" stroke-dasharray="32, 100" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  <path stroke="#f59e0b" stroke-width="4.5" stroke-dasharray="41, 100" stroke-dashoffset="-32" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  <path stroke="#10b981" stroke-width="4.5" stroke-dasharray="27, 100" stroke-dashoffset="-73" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                  <span class="text-2xl font-black text-white" id="donutTotal">37</span>
+                  <span class="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Trains</span>
+                </div>
+              </div>
+
+              <div class="space-y-3 text-xs">
+                <div class="flex items-center space-x-3">
+                  <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                  <div>
+                    <p class="font-semibold text-slate-200">High Impact (&gt;30 min)</p>
+                    <p class="text-slate-400 text-[11px]" id="highImpactCount">12 (32%)</p>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                  <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                  <div>
+                    <p class="font-semibold text-slate-200">Medium Impact (10-30 min)</p>
+                    <p class="text-slate-400 text-[11px]" id="medImpactCount">15 (41%)</p>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                  <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                  <div>
+                    <p class="font-semibold text-slate-200">Low Impact (&lt;10 min)</p>
+                    <p class="text-slate-400 text-[11px]" id="lowImpactCount">10 (27%)</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DELAY DISTRIBUTION (7 Cols) -->
+          <div class="lg:col-span-7 bg-[#0f1936] p-5 rounded-xl border border-slate-800 shadow-xl flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-slate-100 uppercase tracking-wider">DELAY DISTRIBUTION</h3>
+              <a href="#" class="text-xs text-blue-400 hover:underline">View All</a>
+            </div>
+
+            <div class="h-44 flex items-end justify-between px-6 pt-4 pb-2 border-b border-slate-800/80">
+              <div class="flex flex-col items-center space-y-2 group">
+                <span class="text-xs font-bold text-blue-400 opacity-0 group-hover:opacity-100 transition">5</span>
+                <div class="w-10 bg-blue-600/80 hover:bg-blue-500 rounded-t-md transition-all duration-500" style="height: 45px;"></div>
+                <span class="text-[11px] text-slate-400">0-15</span>
+              </div>
+              <div class="flex flex-col items-center space-y-2 group">
+                <span class="text-xs font-bold text-blue-400 opacity-0 group-hover:opacity-100 transition">8</span>
+                <div class="w-10 bg-blue-600/80 hover:bg-blue-500 rounded-t-md transition-all duration-500" style="height: 70px;"></div>
+                <span class="text-[11px] text-slate-400">15-30</span>
+              </div>
+              <div class="flex flex-col items-center space-y-2 group">
+                <span class="text-xs font-bold text-blue-400 opacity-0 group-hover:opacity-100 transition">11</span>
+                <div class="w-10 bg-blue-600/80 hover:bg-blue-500 rounded-t-md transition-all duration-500" style="height: 100px;"></div>
+                <span class="text-[11px] text-slate-400">30-60</span>
+              </div>
+              <div class="flex flex-col items-center space-y-2 group">
+                <span class="text-xs font-bold text-blue-400 opacity-0 group-hover:opacity-100 transition">9</span>
+                <div class="w-10 bg-blue-600/80 hover:bg-blue-500 rounded-t-md transition-all duration-500" style="height: 80px;"></div>
+                <span class="text-[11px] text-slate-400">60-120</span>
+              </div>
+              <div class="flex flex-col items-center space-y-2 group">
+                <span class="text-xs font-bold text-blue-400 opacity-0 group-hover:opacity-100 transition">3</span>
+                <div class="w-10 bg-blue-600/80 hover:bg-blue-500 rounded-t-md transition-all duration-500" style="height: 30px;"></div>
+                <span class="text-[11px] text-slate-400">&gt;120</span>
+              </div>
+            </div>
+            <p class="text-[10px] text-center text-slate-500 mt-2">Delay Range (mins) vs Number of Affected Trains</p>
+          </div>
+
+        </div>
+
+        <!-- 4. BOTTOM ROW: TOP AFFECTED TRAINS + AI OPTIMIZER + ALERTS -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+          <!-- TOP AFFECTED TRAINS TABLE (4 Cols) -->
+          <div class="lg:col-span-4 bg-[#0f1936] p-5 rounded-xl border border-slate-800 shadow-xl flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-slate-100 uppercase tracking-wider">TOP AFFECTED TRAINS</h3>
+              <a href="#" class="text-xs text-blue-400 hover:underline">View All</a>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="text-slate-400 border-b border-slate-800">
+                    <th class="pb-2">Train No.</th>
+                    <th class="pb-2">Train Name</th>
+                    <th class="pb-2 text-right">Delay (mins)</th>
+                    <th class="pb-2 text-right">Impact</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60" id="topTrainsTable">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- AI OPTIMIZATION SUGGESTION WIDGET (5 Cols) -->
+          <div class="lg:col-span-5 bg-[#0e1e3e] p-5 rounded-xl border border-blue-600/40 shadow-xl relative overflow-hidden flex flex-col justify-between">
+            <div class="absolute -top-12 -right-12 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center space-x-2">
+                  <i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-base"></i>
+                  <h3 class="text-sm font-bold text-slate-100 uppercase tracking-wider">RAILOPT AI SUGGESTION & XAI</h3>
+                </div>
+                <span class="text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded border border-blue-400/30 font-mono">MILP Solver v2.4</span>
+              </div>
+
+              <!-- Side-by-side Impact Metrics Comparison -->
+              <div class="grid grid-cols-2 gap-3 bg-[#0a142c] p-3 rounded-lg border border-slate-800 text-xs my-2">
+                <div class="space-y-1 pr-3 border-r border-slate-800">
+                  <p class="text-[10px] font-bold text-slate-400 uppercase">CURRENT PLAN</p>
+                  <div class="flex justify-between pt-1">
+                    <span class="text-slate-400">Affected Trains:</span>
+                    <span class="font-bold text-slate-200" id="optCurrentTrains">37</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-slate-400">Total Delay (mins):</span>
+                    <span class="font-bold text-red-400" id="optCurrentDelay">2,346</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-slate-400">Asset Availability:</span>
+                    <span class="font-bold text-purple-400" id="optCurrentAsset">78%</span>
+                  </div>
+                </div>
+
+                <div class="space-y-1 pl-1">
+                  <p class="text-[10px] font-bold text-emerald-400 uppercase">OPTIMIZED PLAN</p>
+                  <div class="flex justify-between pt-1">
+                    <span class="text-slate-400">Affected Trains:</span>
+                    <span class="font-bold text-emerald-400" id="optNewTrains">18</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-slate-400">Total Delay (mins):</span>
+                    <span class="font-bold text-emerald-400" id="optNewDelay">1,182</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-slate-400">Asset Availability:</span>
+                    <span class="font-bold text-emerald-400" id="optNewAsset">90%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- EXPLAINABLE AI (XAI) BREAKDOWN SECTION -->
+              <div class="bg-[#091124] p-3 rounded-lg border border-slate-800 space-y-2 mt-2">
+                <div class="flex justify-between items-center text-[11px] font-bold">
+                  <span class="text-amber-400 flex items-center space-x-1.5">
+                    <i class="fa-solid fa-brain"></i>
+                    <span>Explainable AI (XAI) Reasoning</span>
+                  </span>
+                  <span class="text-[9px] text-slate-400 font-mono">Attribution Weights</span>
+                </div>
+                
+                <p class="text-[11px] text-slate-300 leading-snug" id="xaiSummaryText">
+                  RailOpt AI MILP Solver resolved 3 major schedule conflicts. High-priority Vande Bharat (20898) & Rajdhani (12301) granted main-line clear pass. Duronto (12262) rerouted via Tatanagar bypass to bypass Block B-127.
+                </p>
+
+                <!-- Feature Importance Progress Bars -->
+                <div class="space-y-1.5 pt-1 text-[10px]">
+                  <div>
+                    <div class="flex justify-between text-slate-400 mb-0.5">
+                      <span>Train Priority Weights (Vande Bharat/Rajdhani)</span>
+                      <span class="font-bold text-emerald-400">42%</span>
+                    </div>
+                    <div class="w-full bg-slate-800 rounded-full h-1.5">
+                      <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 42%"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-slate-400 mb-0.5">
+                      <span>Safety Headway Spacing Margins</span>
+                      <span class="font-bold text-blue-400">28%</span>
+                    </div>
+                    <div class="w-full bg-slate-800 rounded-full h-1.5">
+                      <div class="bg-blue-500 h-1.5 rounded-full" style="width: 28%"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-slate-400 mb-0.5">
+                      <span>Maintenance Block Completion Target</span>
+                      <span class="font-bold text-purple-400">18%</span>
+                    </div>
+                    <div class="w-full bg-slate-800 rounded-full h-1.5">
+                      <div class="bg-purple-500 h-1.5 rounded-full" style="width: 18%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center space-x-3 mt-4">
+              <button onclick="openModal('comparisonModal')" class="flex-1 py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-semibold transition">
+                View Comparison
+              </button>
+              <button id="applyOptBtn" onclick="toggleOptimization()" class="flex-1 py-2 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition shadow-lg shadow-emerald-600/30 flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-check-circle"></i>
+                <span id="applyOptBtnText">Apply Optimized Plan</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- ALERTS & NOTIFICATIONS (3 Cols) -->
+          <div class="lg:col-span-3 bg-[#0f1936] p-5 rounded-xl border border-slate-800 shadow-xl flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-slate-100 uppercase tracking-wider">ALERTS & NOTIFICATIONS</h3>
+              <a href="#" class="text-xs text-blue-400 hover:underline">View All</a>
+            </div>
+
+            <div class="space-y-3 flex-1 overflow-y-auto max-h-56 pr-1" id="alertsContainer">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- MODALS -->
+
+  <!-- 1. CREATE BLOCK MODAL -->
+  <div id="createBlockModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-[#0f1936] border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="font-bold text-slate-100 text-base flex items-center space-x-2">
+          <i class="fa-solid fa-plus-circle text-blue-500"></i>
+          <span>Create New Maintenance Block</span>
+        </h3>
+        <button onclick="closeModal('createBlockModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <form id="createBlockForm" class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Railway Section</label>
+          <input type="text" id="blockSection" required value="ASN - DGR (Asansol - Durgapur Line 2)" class="w-full bg-[#070d1e] border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-blue-500">
+        </div>
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Work Type</label>
+          <select id="blockType" class="w-full bg-[#070d1e] border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-blue-500">
+            <option value="TRW Track Renewal Work (BCM)">TRW Track Renewal Work (BCM)</option>
+            <option value="OHE Wire Maintenance">OHE Wire Maintenance</option>
+            <option value="S&T Interlocking Check">S&T Interlocking Check</option>
+            <option value="Signal Maintenance">Signal Maintenance</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Start Time</label>
+            <input type="time" id="blockStart" value="18:00" class="w-full bg-[#070d1e] border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">End Time</label>
+            <input type="time" id="blockEnd" value="19:30" class="w-full bg-[#070d1e] border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-blue-500">
+          </div>
+        </div>
+
+        <div class="pt-3 flex justify-end space-x-3 border-t border-slate-800">
+          <button type="button" onclick="closeModal('createBlockModal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium shadow-md shadow-blue-600/30">Submit & Optimize</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. RESCHEDULE BLOCK MODAL -->
+  <div id="rescheduleBlockModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-[#0f1936] border border-amber-500/40 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="font-bold text-slate-100 text-base flex items-center space-x-2">
+          <i class="fa-solid fa-clock-rotate-left text-amber-400"></i>
+          <span>Reschedule Engineering Block Window</span>
+        </h3>
+        <button onclick="closeModal('rescheduleBlockModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <form id="rescheduleBlockForm" class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Select Target Block</label>
+          <select id="rescheduleSelect" class="w-full bg-[#070d1e] border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-amber-500">
+            <option value="B-127">B-127 | MURI - BKSC (Track Renewal Work)</option>
+            <option value="B-128">B-128 | DGR - ASN (OHE Overhead Maintenance)</option>
+            <option value="B-129">B-129 | KGP - MDN (S&T Interlocking Inspection)</option>
+            <option value="B-130">B-130 | HWH Yard (Point & Crossing Tamping)</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">New Start Time</label>
+            <input type="time" id="rescheduleStart" value="16:00" class="w-full bg-[#070d1e] border border-slate-700 rounded-lg px-3 py-2 text-slate-100">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">New End Time</label>
+            <input type="time" id="rescheduleEnd" value="16:50" class="w-full bg-[#070d1e] border border-slate-700 rounded-lg px-3 py-2 text-slate-100">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Reason for Rescheduling</label>
+          <select id="rescheduleReason" class="w-full bg-[#070d1e] border border-slate-700 rounded-lg px-3 py-2 text-slate-100">
+            <option value="Freight Train Clear-pass Delay">Freight Train Clear-pass Delay</option>
+            <option value="Tamping Machine Operational Shift">Tamping Machine Operational Shift</option>
+            <option value="IMD Heavy Rainfall Window Shift">IMD Heavy Rainfall Window Shift</option>
+          </select>
+        </div>
+
+        <div class="bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl text-amber-300 text-xs flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-shield-check text-base"></i>
+            <span>AI Conflict Preview:</span>
+          </div>
+          <span class="font-bold text-emerald-400">0 Passenger Conflicts | 1 Freight Shifted</span>
+        </div>
+
+        <div class="pt-3 flex justify-end space-x-3 border-t border-slate-800">
+          <button type="button" onclick="closeModal('rescheduleBlockModal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-medium shadow-md shadow-amber-600/30 flex items-center space-x-2">
+            <i class="fa-solid fa-check"></i>
+            <span>Confirm & Reschedule Block</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. WHAT-IF DIGITAL TWIN SIMULATION MODAL -->
+  <div id="simulationModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-[#0f1936] border border-purple-500/40 rounded-2xl max-w-xl w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="font-bold text-slate-100 text-base flex items-center space-x-2">
+          <i class="fa-solid fa-flask text-purple-400"></i>
+          <span>What-if Railway Digital Twin Simulation Sandbox</span>
+        </h3>
+        <button onclick="closeModal('simulationModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div class="space-y-3 text-xs text-slate-300">
+        <p>Simulate disruption scenarios across Kharagpur Division railway corridor:</p>
+
+        <div class="grid grid-cols-2 gap-3 bg-[#070d1e] p-3.5 rounded-xl border border-slate-800">
+          <div>
+            <label class="block font-semibold text-slate-200 mb-1">Weather Condition</label>
+            <select id="simWeather" class="w-full bg-[#0f1936] border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-100">
+              <option value="normal">Clear / Normal</option>
+              <option value="heavy_rain">Heavy Rainfall (+25m delay)</option>
+              <option value="dense_fog">Dense Fog (TSR 30 km/h)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-200 mb-1">Unscheduled Breakdown</label>
+            <select id="simBreakdown" class="w-full bg-[#0f1936] border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-100">
+              <option value="none">None (Standard Operations)</option>
+              <option value="bcm">BCM Tamping Machine Breakdown</option>
+              <option value="signal">Signal Interlock Failure at HWH</option>
+            </select>
+          </div>
+
+          <div class="col-span-2">
+            <label class="flex items-center space-x-2 text-slate-300 font-semibold cursor-pointer">
+              <input type="checkbox" id="simFreightSurge" class="rounded text-purple-600 focus:ring-purple-500">
+              <span>Simulate Peak Freight Surge (+40% Goods Train Volume)</span>
+            </label>
+          </div>
+        </div>
+
+        <div id="simResultsContainer" class="bg-purple-950/40 border border-purple-500/30 p-3.5 rounded-xl space-y-2">
+          <div class="flex justify-between items-center text-purple-300 font-bold">
+            <span class="flex items-center space-x-2">
+              <i class="fa-solid fa-microchip"></i>
+              <span>Digital Twin Solver Live Metrics</span>
+            </span>
+            <span class="text-[10px] bg-purple-500/20 px-2 py-0.5 rounded border border-purple-400/30">MILP Engine v2.4</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 text-center text-xs pt-1">
+            <div class="bg-[#070d1e] p-2 rounded-lg border border-purple-900">
+              <span class="text-[10px] text-slate-400 block">Baseline Delay</span>
+              <strong class="text-red-400 text-sm" id="simBaseDelay">2,346m</strong>
+            </div>
+            <div class="bg-[#070d1e] p-2 rounded-lg border border-purple-900">
+              <span class="text-[10px] text-slate-400 block">Simulated Delay</span>
+              <strong class="text-amber-400 text-sm" id="simSimDelay">1,182m</strong>
+            </div>
+            <div class="bg-[#070d1e] p-2 rounded-lg border border-purple-900">
+              <span class="text-[10px] text-slate-400 block">Delay Reduction</span>
+              <strong class="text-emerald-400 text-sm" id="simSavedDelay">↓ 49%</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-3 flex justify-end space-x-3 border-t border-slate-800">
+          <button type="button" onclick="closeModal('simulationModal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium">Close</button>
+          <button type="button" onclick="runSimulation()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-medium shadow-md shadow-purple-600/30 flex items-center space-x-2">
+            <i class="fa-solid fa-play"></i>
+            <span>Run Digital Twin Solver</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 4. PLAN COMPARISON MODAL -->
+  <div id="comparisonModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-[#0f1936] border border-slate-700 rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="font-bold text-slate-100 text-base flex items-center space-x-2">
+          <i class="fa-solid fa-code-compare text-emerald-400"></i>
+          <span>Plan Comparison: Manual Schedule vs RailOpt AI Plan</span>
+        </h3>
+        <button onclick="closeModal('comparisonModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 text-xs">
+        <div class="bg-[#070d1e] p-4 rounded-xl border border-red-500/30 space-y-3">
+          <h4 class="font-bold text-red-400 text-sm uppercase">Baseline Schedule</h4>
+          <ul class="space-y-2 text-slate-300">
+            <li class="flex justify-between border-b border-slate-800 pb-1"><span>Total Train Delay:</span> <strong class="text-red-400">2,346 mins</strong></li>
+            <li class="flex justify-between border-b border-slate-800 pb-1"><span>High Impact Trains:</span> <strong>12</strong></li>
+            <li class="flex justify-between border-b border-slate-800 pb-1"><span>Asset Availability:</span> <strong>78%</strong></li>
+            <li class="flex justify-between border-b border-slate-800 pb-1"><span>Passenger Delay Risk:</span> <strong class="text-red-400">High</strong></li>
+            <li class="flex justify-between"><span>Maintenance Window:</span> <strong>Fixed 14:20 - 15:10</strong></li>
+          </ul>
+        </div>
+
+        <div class="bg-[#070d1e] p-4 rounded-xl border border-emerald-500/40 space-y-3 shadow-lg shadow-emerald-950/40">
+          <h4 class="font-bold text-emerald-400 text-sm uppercase flex items-center justify-between">
+            <span>RailOpt AI Plan</span>
+            <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded">RECOMMENDED</span>
+          </h4>
+          <ul class="space-y-2 text-slate-300">
+            <li class="flex justify-between border-b border-slate-800 pb-1"><span>Total Train Delay:</span> <strong class="text-emerald-400">1,182 mins (↓49%)</strong></li>
+            <li class="flex justify-between border-b border-slate-800 pb-1"><span>High Impact Trains:</span> <strong class="text-emerald-400">4 (↓66%)</strong></li>
+            <li class="flex justify-between border-b border-slate-800 pb-1"><span>Asset Availability:</span> <strong class="text-emerald-400">90% (↑12%)</strong></li>
+            <li class="flex justify-between border-b border-slate-800 pb-1"><span>Passenger Delay Risk:</span> <strong class="text-emerald-400">Low</strong></li>
+            <li class="flex justify-between"><span>Optimized Window:</span> <strong>14:20 - 15:10 (Dynamic Reroute)</strong></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pt-3 flex justify-end space-x-3 border-t border-slate-800">
+        <button type="button" onclick="closeModal('comparisonModal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium text-xs">Close</button>
+        <button type="button" onclick="closeModal('comparisonModal'); toggleOptimization();" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium text-xs shadow-md shadow-emerald-600/30">Apply Optimized Plan Now</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

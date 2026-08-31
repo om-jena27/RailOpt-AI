@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RailOpt AI - Passenger Tracking</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen pb-20">
+
+  <!-- TOP DEEP BLUE NAVBAR -->
+  <header class="bg-[#0a192f] text-white px-4 py-3 sticky top-0 z-40 shadow-md">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <button class="text-xl p-1 text-slate-300 hover:text-white"><i class="fa-solid fa-bars"></i></button>
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-train text-blue-400 text-lg"></i>
+          <h1 class="text-base font-bold tracking-wide">RailOpt AI</h1>
+          <span class="text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded border border-blue-400/30">Passenger POV</span>
+        </div>
+      </div>
+      <button class="relative p-2 text-slate-300 hover:text-white">
+        <i class="fa-regular fa-bell text-lg"></i>
+        <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
+      </button>
+    </div>
+
+    <!-- PROFILE GREETING & SEARCH BAR -->
+    <div class="max-w-4xl mx-auto mt-2 pt-2 border-t border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div>
+        <h2 class="text-sm font-semibold flex items-center space-x-2">
+          <span id="userPassengerName">Hi, Jayashree</span>
+          <span class="text-base">👋</span>
+        </h2>
+        <p class="text-xs text-slate-400">Track your journey & maintenance blocks</p>
+      </div>
+
+      <!-- PNR Search Bar -->
+      <div class="space-y-1 w-full md:w-80">
+        <div class="relative flex items-center space-x-2">
+          <div class="relative flex-1">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+            <input type="text" id="pnrInput" placeholder="Enter PNR (e.g. 1234567890)" class="w-full bg-[#172a46] border border-slate-700/80 rounded-lg pl-9 pr-8 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-blue-400 font-mono">
+          </div>
+          <button onclick="searchPnr()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition">Track</button>
+        </div>
+
+        <div class="flex items-center space-x-2 text-[10px] text-slate-400">
+          <span>Sample PNRs:</span>
+          <button onclick="loadSamplePnr('1234567890')" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-blue-300 font-mono">1234567890</button>
+          <button onclick="loadSamplePnr('2089800001')" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-emerald-300 font-mono">2089800001</button>
+          <button onclick="loadSamplePnr('1226200045')" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-cyan-300 font-mono">1226200045</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CATEGORY MENU TAB NAVIGATION BAR -->
+    <nav class="max-w-4xl mx-auto mt-3 flex items-center space-x-1 overflow-x-auto pb-1 text-xs border-b border-slate-800/80">
+      <button onclick="switchTab('home')" id="tab-home" class="nav-tab active-tab flex items-center space-x-1.5 px-3 py-1.5 rounded-t-lg font-bold transition whitespace-nowrap">
+        <i class="fa-solid fa-house"></i>
+        <span>Dashboard</span>
+      </button>
+      <button onclick="switchTab('delay-reason')" id="tab-delay-reason" class="nav-tab flex items-center space-x-1.5 px-3 py-1.5 rounded-t-lg font-medium text-slate-400 hover:text-white transition whitespace-nowrap">
+        <i class="fa-solid fa-circle-question text-amber-400"></i>
+        <span>Why Late?</span>
+      </button>
+      <button onclick="switchTab('map')" id="tab-map" class="nav-tab flex items-center space-x-1.5 px-3 py-1.5 rounded-t-lg font-medium text-slate-400 hover:text-white transition whitespace-nowrap">
+        <i class="fa-solid fa-map-location-dot text-purple-400"></i>
+        <span>Track Work Map</span>
+      </button>
+      <button onclick="switchTab('timeline')" id="tab-timeline" class="nav-tab flex items-center space-x-1.5 px-3 py-1.5 rounded-t-lg font-medium text-slate-400 hover:text-white transition whitespace-nowrap">
+        <i class="fa-solid fa-route text-emerald-400"></i>
+        <span>Journey Timeline</span>
+      </button>
+      <button onclick="switchTab('impact')" id="tab-impact" class="nav-tab flex items-center space-x-1.5 px-3 py-1.5 rounded-t-lg font-medium text-slate-400 hover:text-white transition whitespace-nowrap">
+        <i class="fa-solid fa-chart-pie text-blue-400"></i>
+        <span>Impact & Alternatives</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- LIVE OPTIMIZATION SSE BANNER -->
+  <div id="optimizationToast" class="max-w-4xl mx-auto px-4 mt-3 hidden">
+    <div class="bg-emerald-600 text-white p-3 rounded-xl shadow-lg flex items-center justify-between animate-bounce">
+      <div class="flex items-center space-x-3 text-xs font-semibold">
+        <i class="fa-solid fa-circle-check text-lg"></i>
+        <div>
+          <p class="font-bold text-sm">🎉 Good News! Delay Reduced by RailOpt AI</p>
+          <p class="text-[11px] text-emerald-100">South Eastern Railway Authority re-optimized track possession! Delay reduced.</p>
+        </div>
+      </div>
+      <button onclick="dismissToast()" class="text-white hover:text-emerald-200 text-sm"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  </div>
+
+  <!-- DYNAMIC REROUTING ALERT BANNER -->
+  <div id="rerouteBanner" class="max-w-4xl mx-auto px-4 mt-3 hidden">
+    <div class="bg-cyan-600 text-white p-3 rounded-xl shadow-lg flex items-center justify-between">
+      <div class="flex items-center space-x-3 text-xs font-semibold">
+        <i class="fa-solid fa-route text-xl"></i>
+        <div>
+          <p class="font-bold text-sm">🔀 AI Dynamic Reroute Active via Tatanagar (TATA) Bypass</p>
+          <p class="text-[11px] text-cyan-100">Railway AI rerouted service around Muri track block — Saved 45 mins delay!</p>
+        </div>
+      </div>
+      <button onclick="switchTab('map')" class="px-3 py-1 bg-white text-cyan-800 rounded-lg font-bold text-xs shadow-sm">View Reroute Map</button>
+    </div>
+  </div>
+
+  <!-- LIVE STATION VOICE ANNOUNCEMENT BAR (PA SYSTEM) -->
+  <div class="max-w-4xl mx-auto px-4 mt-3">
+    <div class="bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800 text-white p-3.5 rounded-2xl shadow-md border border-amber-500 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center space-x-3 text-xs">
+        <div class="w-9 h-9 rounded-full bg-amber-500/30 border border-amber-300/40 flex items-center justify-center text-lg animate-pulse shrink-0">
+          <i class="fa-solid fa-bullhorn text-amber-200"></i>
+        </div>
+        <div>
+          <h4 class="font-bold text-sm text-white flex items-center space-x-2">
+            <span>Station PA Voice Announcement</span>
+            <span class="text-[9px] bg-red-500 text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-wider animate-pulse">Live Broadcast</span>
+          </h4>
+          <p class="text-[11px] text-amber-100" id="paStatusText">Click below to listen to live Indian Railways station audio announcement:</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2 w-full sm:w-auto">
+        <!-- Hindi PA Announcement -->
+        <button onclick="playPaAnnouncement('hi')" class="flex-1 sm:flex-none px-3.5 py-1.5 bg-white text-amber-900 hover:bg-amber-50 rounded-xl text-xs font-extrabold transition shadow-sm flex items-center justify-center space-x-1.5">
+          <i class="fa-solid fa-volume-high text-amber-600"></i>
+          <span>हिंदी (Hindi)</span>
+        </button>
+
+        <!-- English PA Announcement -->
+        <button onclick="playPaAnnouncement('en')" class="flex-1 sm:flex-none px-3.5 py-1.5 bg-amber-950/80 hover:bg-amber-900 text-white rounded-xl text-xs font-bold transition border border-amber-400/40 flex items-center justify-center space-x-1.5">
+          <i class="fa-solid fa-volume-high text-amber-300"></i>
+          <span>English</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN MULTI-PAGE CONTENT AREA -->
+  <main class="max-w-4xl mx-auto p-4 space-y-4">
+
+    <!-- PAGE 1: HOME DASHBOARD (Clean Overview) -->
+    <section id="page-home" class="page-content space-y-4">
+      
+      <!-- YOUR CURRENT JOURNEY CARD -->
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 space-y-4">
+        <div class="flex justify-between items-center text-xs">
+          <span class="font-bold text-slate-500 uppercase tracking-wider text-[10px]">YOUR CURRENT JOURNEY</span>
+          <span class="text-blue-600 font-semibold text-[11px]" id="userCoachSeat">Coach A1 (2A)</span>
+        </div>
+
+        <div class="flex items-start justify-between">
+          <div>
+            <h3 class="font-bold text-slate-900 text-base" id="userTrainName">12810 Howrah - Mumbai CSMT Mail</h3>
+            <p class="text-xs text-slate-500 font-mono mt-0.5" id="userPnrText">PNR: 1234567890</p>
+          </div>
+          <span class="px-2.5 py-1 rounded bg-blue-50 text-blue-600 font-bold text-xs border border-blue-200">Running</span>
+        </div>
+
+        <!-- DELAY DISPLAY BOX -->
+        <div class="bg-red-50/70 p-4 rounded-xl border border-red-100 flex items-center justify-between">
+          <div>
+            <p class="text-[10px] text-red-500 font-bold uppercase tracking-wider">Delayed by</p>
+            <h2 class="text-3xl font-black text-red-600" id="userCurrentDelay">38 mins</h2>
+          </div>
+          <div class="text-right">
+            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Expected Arrival</p>
+            <p class="text-sm font-extrabold text-slate-800" id="userExpectedArrival">07:30 AM <span class="text-xs font-normal text-slate-500">Tomorrow</span></p>
+          </div>
+        </div>
+
+        <!-- NEXT STOP & QUICK SUMMARY -->
+        <div class="text-xs space-y-2 pt-2 border-t border-slate-100">
+          <div class="flex justify-between items-center">
+            <span class="text-slate-500 font-medium">Next Stop</span>
+            <span class="font-bold text-slate-800 text-sm" id="userNextStop">Kharagpur Jn (KGP)</span>
+          </div>
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-400" id="userNextStopArrival">Scheduled Arrival: 11:18 AM</span>
+            <span class="text-red-500 font-bold" id="userNextStopDelay">• Delay: 25 mins</span>
+          </div>
+        </div>
+
+        <!-- Action Button -->
+        <button onclick="switchTab('timeline')" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 shadow-md shadow-blue-600/20">
+          <i class="fa-solid fa-location-crosshairs"></i>
+          <span>View Live Tracking & Route Timeline &gt;</span>
+        </button>
+      </div>
+
+      <!-- QUICK ACTIONS CATEGORY GRID -->
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 space-y-3">
+        <h4 class="font-bold text-xs text-slate-500 uppercase tracking-wider">Explore Category Views</h4>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+          <button onclick="switchTab('delay-reason')" class="p-3 bg-amber-50/60 hover:bg-amber-100/80 rounded-xl text-left border border-amber-200/70 transition group">
+            <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center mb-2 text-sm shadow-sm group-hover:scale-105 transition">
+              <i class="fa-solid fa-circle-question"></i>
+            </div>
+            <span class="font-bold text-slate-900 block text-xs">Why is my train late?</span>
+            <span class="text-[10px] text-slate-500 block mt-0.5">Track work explanation</span>
+          </button>
+
+          <button onclick="switchTab('map')" class="p-3 bg-purple-50/60 hover:bg-purple-100/80 rounded-xl text-left border border-purple-200/70 transition group">
+            <div class="w-9 h-9 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center mb-2 text-sm shadow-sm group-hover:scale-105 transition">
+              <i class="fa-solid fa-map-location-dot"></i>
+            </div>
+            <span class="font-bold text-slate-900 block text-xs">Live Track Work</span>
+            <span class="text-[10px] text-slate-500 block mt-0.5">Interactive railway map</span>
+          </button>
+
+          <button onclick="switchTab('timeline')" class="p-3 bg-emerald-50/60 hover:bg-emerald-100/80 rounded-xl text-left border border-emerald-200/70 transition group">
+            <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-2 text-sm shadow-sm group-hover:scale-105 transition">
+              <i class="fa-solid fa-route"></i>
+            </div>
+            <span class="font-bold text-slate-900 block text-xs">Journey Timeline</span>
+            <span class="text-[10px] text-slate-500 block mt-0.5">Station delays & arrival</span>
+          </button>
+
+          <button onclick="switchTab('impact')" class="p-3 bg-blue-50/60 hover:bg-blue-100/80 rounded-xl text-left border border-blue-200/70 transition group">
+            <div class="w-9 h-9 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center mb-2 text-sm shadow-sm group-hover:scale-105 transition">
+              <i class="fa-solid fa-chart-pie"></i>
+            </div>
+            <span class="font-bold text-slate-900 block text-xs">Impact & Alternatives</span>
+            <span class="text-[10px] text-slate-500 block mt-0.5">Affected stops & options</span>
+          </button>
+        </div>
+
+        <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-4 rounded-xl flex items-center justify-between shadow-sm">
+          <div class="space-y-1">
+            <h5 class="text-xs font-bold">RailOpt AI Decision Support Engine</h5>
+            <p class="text-[11px] text-blue-200">Know the exact reason behind your train delay directly from South Eastern Railway Control.</p>
+          </div>
+          <i class="fa-solid fa-shield-halved text-2xl text-blue-300"></i>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- PAGE 2: WHY IS MY TRAIN LATE? -->
+    <section id="page-delay-reason" class="page-content space-y-4 hidden">
+      
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 space-y-4">
+        <div class="flex items-center space-x-2 text-amber-600">
+          <i class="fa-solid fa-circle-question text-lg"></i>
+          <h3 class="font-bold text-base text-slate-900">Why is my train delayed?</h3>
+        </div>
+
+        <div class="bg-red-50/70 p-4 rounded-xl border border-red-200 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2 text-red-600 font-bold text-sm">
+              <i class="fa-solid fa-wrench"></i>
+              <span id="blockTitle">Track Maintenance Work</span>
+            </div>
+            <span class="px-2.5 py-0.5 rounded-full bg-red-100 text-red-600 font-bold text-xs uppercase tracking-wider" id="blockStatus">Live</span>
+          </div>
+          <p class="text-xs font-semibold text-red-700" id="blockLocation">Active engineering block ahead on your route</p>
+
+          <div class="space-y-2 text-xs pt-2 border-t border-red-200/60 text-slate-700">
+            <div class="flex justify-between"><span class="text-slate-500">Location</span><span class="font-bold text-slate-900" id="blockSectionText">Muri - Bokaro Section</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Type of Work</span><span class="font-bold text-slate-900" id="blockTypeText">Track Renewal Work (BCM)</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Block Timing</span><span class="font-mono font-bold text-slate-900" id="blockTimingText">14:20 - 15:10</span></div>
+          </div>
+        </div>
+
+        <div class="bg-blue-50/70 p-4 rounded-xl border border-blue-100 text-xs text-slate-700 space-y-1">
+          <p class="font-bold text-blue-900 text-xs flex items-center space-x-2">
+            <i class="fa-solid fa-circle-info text-blue-500"></i>
+            <span>What does this mean for your journey?</span>
+          </p>
+          <p class="text-xs leading-relaxed text-slate-600 pt-1" id="blockExplanation">Your train is being held before the work zone to ensure safety while maintenance is in progress.</p>
+        </div>
+
+        <div class="flex justify-between items-center text-xs text-slate-400 pt-2 border-t border-slate-100">
+          <span>Last updated: <span id="lastUpdatedTime">14:35:22</span></span>
+          <button onclick="fetchState()" class="text-blue-600 font-bold hover:underline flex items-center space-x-1">
+            <i class="fa-solid fa-rotate-right"></i>
+            <span>Refresh Status</span>
+          </button>
+        </div>
+
+        <div class="pt-2">
+          <button onclick="switchTab('map')" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-map-location-dot text-purple-400"></i>
+            <span>View Live Track Work Location on Map &gt;</span>
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- PAGE 3: LIVE TRACK WORK MAP WITH DYNAMIC REROUTE VISUALIZER -->
+    <section id="page-map" class="page-content space-y-4 hidden">
+      
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div>
+            <div class="flex items-center space-x-2 text-purple-600">
+              <i class="fa-solid fa-map-location-dot text-lg"></i>
+              <h3 class="font-bold text-base text-slate-900" id="userMapTrainTitle">Live Route Map — 20898 Vande Bharat Express</h3>
+            </div>
+            <p class="text-xs text-slate-500" id="userMapTrainSubtitle">Tracking PNR: 1234567890 • Section: Ranchi - Muri - Tatanagar - Kharagpur - Howrah</p>
+          </div>
+
+          <!-- Train Switcher Buttons -->
+          <div class="flex items-center space-x-1.5 text-xs">
+            <span class="text-slate-400 text-[10px] font-bold uppercase">Switch Train:</span>
+            <button onclick="loadSamplePnr('1234567890')" class="px-2 py-1 rounded bg-blue-50 text-blue-600 font-mono font-bold hover:bg-blue-100">20898 (VB)</button>
+            <button onclick="loadSamplePnr('1226200045')" class="px-2 py-1 rounded bg-cyan-50 text-cyan-700 font-mono font-bold hover:bg-cyan-100">12019 (Shatabdi)</button>
+          </div>
+        </div>
+
+        <div class="relative w-full h-80 bg-slate-900 rounded-xl border border-slate-800 overflow-hidden flex items-center justify-center p-4 shadow-inner">
+          <svg viewBox="0 0 400 200" class="w-full h-full">
+            <defs>
+              <filter id="userGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
+
+            <!-- Base Railway Tracks -->
+            <path d="M 50,130 L 130,90 L 210,90 L 310,60 L 370,120" fill="none" stroke="#334155" stroke-width="5" />
+            <path d="M 130,90 L 190,150 L 300,160 L 370,120" fill="none" stroke="#334155" stroke-width="5" />
+
+            <!-- Standard Normal Path -->
+            <path d="M 50,130 L 130,90" fill="none" stroke="#10b981" stroke-width="3" />
+            <path d="M 210,90 L 310,60 L 370,120" fill="none" stroke="#10b981" stroke-width="3" />
+
+            <!-- AI REROUTED PATH (Muri 130,90 -> Tatanagar 190,150 -> Kharagpur 300,160 -> Howrah 370,120) -->
+            <path id="userReroutePathSvg" d="M 50,130 L 130,90 L 190,150 L 300,160 L 370,120" fill="none" stroke="#06b6d4" stroke-width="4" stroke-dasharray="6,3" class="hidden animate-pulse" filter="url(#userGlow)" />
+
+            <!-- BLOCKED TRACK SECTION: MURI (130,90) to BKSC (210,90) -->
+            <line x1="130" y1="90" x2="210" y2="90" stroke="#ef4444" stroke-width="5" stroke-dasharray="6,3" class="animate-pulse" filter="url(#userGlow)" />
+
+            <!-- Station Nodes -->
+            <circle cx="50" cy="130" r="5" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" />
+            <text x="40" y="148" fill="#e2e8f0" font-size="9" font-weight="bold">RNC (Ranchi)</text>
+
+            <circle cx="130" cy="90" r="6" fill="#ef4444" stroke="#ffffff" stroke-width="2" class="animate-pulse" />
+            <text x="120" y="76" fill="#f87171" font-size="10" font-weight="bold">MURI (Muri)</text>
+
+            <circle cx="210" cy="90" r="6" fill="#ef4444" stroke="#ffffff" stroke-width="2" />
+            <text x="200" y="76" fill="#f87171" font-size="10" font-weight="bold">BKSC (Bokaro)</text>
+
+            <circle cx="190" cy="150" r="6" fill="#06b6d4" stroke="#ffffff" stroke-width="2" />
+            <text x="170" y="168" fill="#22d3ee" font-size="9" font-weight="bold">TATA (Tatanagar)</text>
+
+            <circle cx="300" cy="160" r="6" fill="#3b82f6" stroke="#ffffff" stroke-width="2" />
+            <text x="285" y="178" fill="#60a5fa" font-size="9" font-weight="bold">KGP (Kharagpur)</text>
+
+            <circle cx="310" cy="60" r="5" fill="#64748b" stroke="#ffffff" stroke-width="1.5" />
+            <text x="300" y="48" fill="#cbd5e1" font-size="9" font-weight="bold">DHN (Dhanbad)</text>
+
+            <circle cx="370" cy="120" r="7" fill="#3b82f6" stroke="#ffffff" stroke-width="2" />
+            <text x="355" y="140" fill="#60a5fa" font-size="10" font-weight="bold">HWH (Howrah)</text>
+
+            <!-- LIVE TRAIN LOCATION ANIMATED MARKER -->
+            <g id="userTrainLocationMarker" transform="translate(130, 90)">
+              <circle cx="0" cy="0" r="10" fill="#06b6d4" opacity="0.4" class="animate-ping" />
+              <circle cx="0" cy="0" r="6" fill="#06b6d4" stroke="#ffffff" stroke-width="2" />
+              <rect x="-24" y="-22" width="48" height="13" rx="3" fill="#0f172a" stroke="#06b6d4" stroke-width="1" />
+              <text x="0" y="-13" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="bold">🚆 YOU ARE HERE</text>
+            </g>
+
+            <!-- Block Hazard Badge -->
+            <g transform="translate(140, 20)">
+              <rect width="160" height="42" rx="6" fill="#0f172a" stroke="#ef4444" stroke-width="1.5" />
+              <text x="10" y="16" fill="#ef4444" font-size="9" font-weight="bold">BLOCK B-127 (MURI - BKSC)</text>
+              <text x="10" y="30" fill="#cbd5e1" font-size="8">Track Renewal Work (BCM 342)</text>
+            </g>
+          </svg>
+
+          <div class="absolute bottom-3 right-3 flex flex-col space-y-1">
+            <button class="w-7 h-7 bg-slate-800 text-white rounded-lg border border-slate-700 text-sm font-bold shadow-sm">+</button>
+            <button class="w-7 h-7 bg-slate-800 text-white rounded-lg border border-slate-700 text-sm font-bold shadow-sm">-</button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
+          <span class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span><span>Scheduled Path</span></span>
+          <span class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-red-500"></span><span>Blocked Track</span></span>
+          <span class="flex items-center space-x-1.5"><span class="w-3 h-1 bg-cyan-500 rounded"></span><span class="text-cyan-600 font-bold">AI Rerouted Path (TATA / KGP)</span></span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- PAGE 4: JOURNEY TIMELINE -->
+    <section id="page-timeline" class="page-content space-y-4 hidden">
+      
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2 text-emerald-600">
+            <i class="fa-solid fa-route text-lg"></i>
+            <h3 class="font-bold text-base text-slate-900">Journey Route Timeline</h3>
+          </div>
+          <span class="text-xs text-slate-500 font-mono">Live GPS Telemetry</span>
+        </div>
+
+        <div class="relative pl-6 space-y-6 text-xs before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200" id="userTimeline">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex items-center justify-between mt-4">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-base">
+              <i class="fa-regular fa-clock"></i>
+            </div>
+            <div>
+              <p class="font-bold text-slate-900 text-xs">Estimated Final Arrival (CSMT)</p>
+              <h4 class="text-lg font-black text-slate-900" id="estArrivalTime">07:30 AM <span class="text-xs font-normal text-slate-500">Tomorrow</span></h4>
+            </div>
+          </div>
+          <span class="px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs font-bold" id="estArrivalDelay">Delayed by 38 mins</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- PAGE 5: IMPACT & ALTERNATIVES -->
+    <section id="page-impact" class="page-content space-y-4 hidden">
+      
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 space-y-4">
+        <div class="flex items-center space-x-2 text-blue-600">
+          <i class="fa-solid fa-chart-pie text-lg"></i>
+          <h3 class="font-bold text-base text-slate-900">Impact on Your Journey</h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 rounded-xl bg-red-50/70 border border-red-100 flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-sm">
+              <i class="fa-regular fa-clock"></i>
+            </div>
+            <div>
+              <span class="text-slate-500 text-[11px] font-medium">Total Delay</span>
+              <p class="font-black text-red-600 text-base" id="impactTotalDelay">38 mins</p>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-amber-50/70 border border-amber-100 flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-train"></i>
+            </div>
+            <div>
+              <span class="text-slate-500 text-[11px] font-medium">Stops Affected</span>
+              <p class="font-black text-amber-600 text-base" id="impactStops">4</p>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-emerald-50/70 border border-emerald-100 flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-users"></i>
+            </div>
+            <div>
+              <span class="text-slate-500 text-[11px] font-medium">Passengers Affected</span>
+              <p class="font-black text-emerald-700 text-base" id="impactPassengers">1200+</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 space-y-3">
+        <h4 class="font-bold text-xs text-slate-500 uppercase tracking-wider">Alternative Indian Trains & Dynamic Reroutes</h4>
+
+        <div class="space-y-2 text-xs">
+          <div class="p-3 rounded-xl border border-cyan-300 bg-cyan-50/60 transition flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-9 h-9 rounded-lg bg-cyan-100 text-cyan-700 flex items-center justify-center text-sm font-bold">
+                <i class="fa-solid fa-route"></i>
+              </div>
+              <div>
+                <p class="font-bold text-slate-800">12262 Howrah - Mumbai Duronto Express</p>
+                <p class="text-[11px] text-cyan-800 font-semibold">🔀 AI Reroute Active: Running via Tatanagar bypass (Saves 45 mins)</p>
+              </div>
+            </div>
+            <span class="text-xs text-cyan-700 font-bold px-2 py-0.5 rounded bg-cyan-100 border border-cyan-300">Rerouted</span>
+          </div>
+
+          <div class="p-3 rounded-xl border border-slate-200 hover:border-blue-300 transition flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-bold">
+                <i class="fa-solid fa-train"></i>
+              </div>
+              <div>
+                <p class="font-bold text-slate-800">12860 Gitanjali Express</p>
+                <p class="text-[11px] text-slate-500">Running on Main Line (Delayed by 15 mins)</p>
+              </div>
+            </div>
+            <span class="text-xs text-blue-600 font-bold">Alternative</span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- BOTTOM NAVIGATION FOOTER -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-6 py-2 flex justify-between items-center z-40 text-slate-500 text-[10px] font-medium shadow-lg max-w-4xl mx-auto">
+    <button onclick="switchTab('home')" class="nav-bottom flex flex-col items-center text-blue-600 font-bold" id="bottom-home">
+      <i class="fa-solid fa-house text-base"></i>
+      <span>Home</span>
+    </button>
+    <button onclick="switchTab('delay-reason')" class="nav-bottom flex flex-col items-center hover:text-slate-900" id="bottom-delay-reason">
+      <i class="fa-solid fa-circle-question text-base"></i>
+      <span>Why Late?</span>
+    </button>
+    <button onclick="switchTab('map')" class="nav-bottom flex flex-col items-center hover:text-slate-900" id="bottom-map">
+      <i class="fa-solid fa-map-location-dot text-base"></i>
+      <span>Track Map</span>
+    </button>
+    <button onclick="switchTab('timeline')" class="nav-bottom flex flex-col items-center hover:text-slate-900" id="bottom-timeline">
+      <i class="fa-solid fa-route text-base"></i>
+      <span>Timeline</span>
+    </button>
+    <button onclick="switchTab('impact')" class="nav-bottom flex flex-col items-center hover:text-slate-900" id="bottom-impact">
+      <i class="fa-solid fa-chart-pie text-base"></i>
+      <span>Impact</span>
+    </button>
+  </nav>
+
+  <script src="app.js"></script>
+</body>
+</html>
